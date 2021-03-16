@@ -4,8 +4,8 @@
 
 ### Added
 
-- Support simple conditions ([docs](https://github.com/alonrbar/easy-template-x#conditions)).
-- Support custom data resolver - enables advanced syntax support ([docs](https://github.com/alonrbar/easy-template-x#advanced-syntax-and-custom-resolvers)).
+- Support for simple conditions ([docs](https://github.com/alonrbar/easy-template-x#conditions)).
+- Support for custom data resolvers - enables advanced syntax support ([docs](https://github.com/alonrbar/easy-template-x#advanced-syntax-and-custom-resolvers)).
 
 ### Changed
 

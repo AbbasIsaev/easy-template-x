@@ -18,15 +18,15 @@ Generate docx documents from templates, in Node or in the browser.
   - [Link plugin](#link-plugin)
   - [Raw xml plugin](#raw-xml-plugin)
   - [Writing custom plugins](#writing-your-own-plugins)
+- [Scope resolution](#scope-resolution)
 - [Extensions](#extensions)
   - [Community Extensions](#community-extensions)
     - [Data Binding Extension](#data-binding-extension)
-- [Scope resolution](#scope-resolution)
 - [Template handler options](#template-handler-options)
   - [Custom tag delimiters](#custom-tag-delimiters)
   - [Advanced syntax and custom resolvers](#advanced-syntax-and-custom-resolvers)
-- [Advanced API](#note---advanced-api)
 - [Supported Binary Formats](#supported-binary-formats)
+- [Internal API](#note---internal-api)
 - [Philosophy](#philosophy)
 - [Prior art and motivation](#prior-art-and-motivation)
 - [Changelog](#changelog)
@@ -129,7 +129,7 @@ Checkout this [live demo](https://codesandbox.io/s/easy-template-x-demo-x4ppu?fo
 These are the plugins that comes bundled with `easy-template-x`:
 
 - [Simple text replacement plugin.](#text-plugin)
-- [Loop plugin for iterating text, table rows and list rows.](#loop-plugin)
+- [Loop plugin for iterating text, table rows and list rows and for simple conditions.](#loop-plugin)
 - [Image plugin for embedding images.](#image-plugin)
 - [Link plugin for hyperlinks creation.](#link-plugin)
 - [Raw xml plugin for custom xml insertion.](#raw-xml-plugin)
@@ -335,35 +335,6 @@ export interface RawXmlContent extends PluginContent {
 }
 ```
 
-## Extensions
-
-While most document manipulation can be achieved using plugins, there are some cases where a more powerful tool is required. In order to extend the document manipulation process you can specify extensions that will be run before and/or after the standard template processing.
-
-To write an extension inherit from the [TemplateExtension](./src/extensions/templateExtension.ts) class.  
-
-By default no extension is loaded. Extensions and the order they run in are specified via the `TemplateHandlerOptions`.
-
-```typescript
-const handler = new TemplateHandler({
-    extensions: {
-        afterCompilation: [
-            new DataBindingExtension()
-        ]
-    }
-});
-```
-
-### Community Extensions
-
-The following extensions were developed by the community.  
-Want to see your extension here? Submit a pull request or [open an issue](https://github.com/alonrbar/easy-template-x/issues).
-
-#### Data Binding Extension
-
-The [easy-template-x-data-binding](https://github.com/sebastianrogers/easy-template-x-data-binding) extension supports updating [custom XML files](https://docs.microsoft.com/en-gb/archive/blogs/modonovan/word-2007-content-controls-and-xml-part-1-the-basics) inside Word documents.
-
-This allows using `easy-template-x` to automatically fill [Word forms](https://support.office.com/en-us/article/create-forms-that-users-complete-or-print-in-word-040c5cc1-e309-445b-94ac-542f732c8c8b) that uses content controls.
-
 ## Scope resolution
 
 `easy-template-x` supports tag data scoping. That is, you can reference
@@ -398,11 +369,40 @@ Output document:
 
 ![output document](./docs/assets/scope-out.png?raw=true)
 
+## Extensions
+
+While most document manipulation can be achieved using plugins, there are some cases where a more powerful tool is required. In order to extend the document manipulation process you can specify extensions that will be run before and/or after the standard template processing.
+
+To write an extension inherit from the [TemplateExtension](./src/extensions/templateExtension.ts) class.  
+
+By default no extension is loaded. Extensions and the order they run in are specified via the `TemplateHandlerOptions`.
+
+```typescript
+const handler = new TemplateHandler({
+    extensions: {
+        afterCompilation: [
+            new DataBindingExtension()
+        ]
+    }
+});
+```
+
+### Community Extensions
+
+The following extensions were developed by the community.  
+Want to see your extension here? Submit a pull request or [open an issue](https://github.com/alonrbar/easy-template-x/issues).
+
+#### Data Binding Extension
+
+The [easy-template-x-data-binding](https://github.com/sebastianrogers/easy-template-x-data-binding) extension supports updating [custom XML files](https://docs.microsoft.com/en-gb/archive/blogs/modonovan/word-2007-content-controls-and-xml-part-1-the-basics) inside Word documents.
+
+This allows using `easy-template-x` to automatically fill [Word forms](https://support.office.com/en-us/article/create-forms-that-users-complete-or-print-in-word-040c5cc1-e309-445b-94ac-542f732c8c8b) that uses content controls.
+
 ## Template handler options
 
 You can configure the template handler behavior by passing an options object to it's constructor.
 
-Below is the list of options with their types and default values:
+Below is the list of options along with their types and default values:
 
 ```typescript
 const handler = new TemplateHandler({
@@ -433,7 +433,7 @@ const handler = new TemplateHandler({
 
 ### Custom tag delimiters
 
-To use custom tag delimiters and container marks (used for loops and conditions) specify the `delimiters` option of the template handler. 
+To use custom tag delimiters and container marks (used for loops and conditions) specify the `delimiters` option of the template handler.
 
 For instance, to change from `{#open loop}` and `{/close loop}` to `{{>>open loop}}` and `{{<<close loop}}` do the following:
 
@@ -466,15 +466,6 @@ This allows the use of advanced syntax expressions such as:
 
 ![output document](./docs/assets/angular-syntax.png?raw=true)
 
-## Note - Advanced API
-
-You'll usually just use the `TemplateHandler` as seen in the examples but if you
-want to implement a custom plugin or otherwise do some advanced work yourself
-checkout the [typings](./dist/types/index.d.ts) file. Do note however that while the
-advanced API is mostly documented in the typings file it's still considered an
-internal implementation detail and may break between minor versions, use at your
-own risk.
-
 ## Supported Binary Formats
 
 The library supports the following binary formats:
@@ -483,13 +474,21 @@ The library supports the following binary formats:
 - [Buffer](https://nodejs.org/api/buffer.html) (node)
 - [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) (browser and node)
 
+## Note - Internal API
+
+In addition to what's described here in the readme file the library exports many
+more types and functions. While you are free to use them as you see fit please note
+that anything not documented in the readme file is considered an internal
+implementation detail and may break between minor versions, use at your own
+risk.
+
 ## Philosophy
 
 This library was originally developed as part of an app for non-English speaking k-12 teachers. As such it assumes the template editors do not necessarily have technical background and certainly no programming experience.
 
 In order to stay friendly for such potential users it keeps the template syntax as simple as possible, limiting the required knowledge to `{tags}` and `{#loop tags}{/loop tags}` alone (and can be customized to support an alternative, potentially simpler syntax, such as `{>>loop tags}{<<loop tags}`).
 
-For the same reason it supports tags with whitespace and in any unicode language such as `{שם התלמיד}` or `{اسم المعلم}`.
+For the same reason it supports tags with whitespace and any unicode supported alphabet such as `{שם התלמיד}` or `{اسم المعلم}`.
 
 If your template do not need to meet such requirements, especially if they are meant to be edited by developers you can adopt a more sophisticated [alternative syntax](#advanced-syntax-and-custom-resolvers).
 
